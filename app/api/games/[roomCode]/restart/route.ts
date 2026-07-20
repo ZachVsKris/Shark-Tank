@@ -1,4 +1,0 @@
-import { NextRequest } from "next/server";
-import { randomizedCompanyIds } from "../../../../../lib/companies";
-import { authenticatePlayer,jsonError,STARTING_CASH } from "../../../../../lib/game";
-export async function POST(request:NextRequest,context:{params:Promise<{roomCode:string}>}){try{const{roomCode}=await context.params;const{supabase,game,player}=await authenticatePlayer(roomCode,request);if(!player.is_host)throw new Error("Only the host can restart.");await supabase.from("bids").delete().eq("game_id",game.id);await supabase.from("investments").delete().eq("game_id",game.id);await supabase.from("game_players").update({cash:STARTING_CASH,ready:false}).eq("game_id",game.id);const{error}=await supabase.from("games").update({status:"lobby",phase:"lobby",phase_number:1,total_phases:0,companies_per_phase:0,company_ids:randomizedCompanyIds()}).eq("id",game.id);if(error)throw error;return Response.json({ok:true});}catch(error){return jsonError(error);}}
