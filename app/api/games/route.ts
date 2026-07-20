@@ -58,6 +58,23 @@ export async function POST(request: NextRequest) {
 
     return Response.json({ roomCode, playerToken });
   } catch (error) {
-    return jsonError(error);
+    console.error("POST /api/games failed:", error);
+
+    const supabaseError = error as {
+      message?: string;
+      code?: string;
+      details?: string;
+      hint?: string;
+    };
+
+    return Response.json(
+      {
+        error: supabaseError?.message || "Unexpected error.",
+        code: supabaseError?.code,
+        details: supabaseError?.details,
+        hint: supabaseError?.hint
+      },
+      { status: 400 }
+    );
   }
 }
